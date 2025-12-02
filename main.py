@@ -1,8 +1,12 @@
 import sys
+from http.client import HTTPException
+
 import  requests
 from PyQt5.QtWidgets import (QApplication,QWidget,QLabel,
                              QLineEdit,QPushButton,QVBoxLayout)
 from PyQt5.QtCore import Qt
+from requests import HTTPError
+
 
 class WeatherApp(QWidget):
     def __init__(self):
@@ -79,14 +83,38 @@ class WeatherApp(QWidget):
         api_key="21746b030aef629a2e56ff9601d849bd"
         city=self.city_input.text()
         url=f"https://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}"
+        try:
+            response=requests.get(url)
+            response.raise_for_status()
+            data=response.json()
 
-        response=requests.get(url)
-        data=response.json()
+            if data["cod"]==200:
+                self.display_weather(data)
 
-        if data["cod"]==200:
-            self.display_weather(data)
-        else:
-            print(data)
+        except requests.exceptions.HTTPError as http_error:
+            match response.status_code:
+                case 400:
+                    print("Wrong request\nPlease check the name of the city you have entered")
+                case 401:
+                    print("Anauthorized\nInvalid API key")
+                case 403:
+                    print("Forbidden\nAccess is denied")
+                case 404:
+                    print("Not found\nCity not found")
+                case 500:
+                    print("Internal server error\nPlease try again later")
+                case 502:
+                    print("Bad Gateway\nInvalid response from the server")
+                case 503:
+                    print("Service unavailable\nServer is down")
+                case 504:
+                    print("Gateway Timeout \nNo response from the server")
+                case _:
+                    print(f"HTTP error occured\n{http_error}")
+
+
+        except requests.exceptions.RequestException:
+            pass
 
     def display_error(self,message):
         pass
