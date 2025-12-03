@@ -124,11 +124,17 @@ class WeatherApp(QWidget):
 
         # Output only in GUI, not terminal
         self.temperature_label.setText(f"{temperature_c:.0f}°C")
-        self.emoji_label.setText(self.get_weather_emoji(weather_id))  # pass weather_id
+        self.emoji_label.setText(self.get_weather_emoji(weather_id,temperature_c))  # pass weather_id
         self.description_label.setText(weather_descrption)
 
     @staticmethod
-    def get_weather_emoji(weather_id):
+    def get_weather_emoji(weather_id,temperature_c):
+
+        if temperature_c <= 0:
+            return "❄️"
+        elif temperature_c >= 35:
+            return "🔥"
+
         if weather_id >= 200 and weather_id <= 232:
             return "⛈️"
         elif weather_id >= 300 and weather_id <= 321:
